@@ -23,6 +23,7 @@ It transforms the stock clock into a connected smart display featuring a local w
   - Dual-rail power management (USB-C primary with AAA backup)
 - **Optional CO₂ sensor**: Sensirion SCD40, SCD41 or SCD43 over I2C, with automatic variant detection.
 - **Web UI**: Responsive browser-based app featuring a live real-time display preview and device controls and settings.
+- **Network time**: NTP synchronization with automatic daylight saving time. Time zone, NTP server and 12/24-hour format are set from the web UI.
 - **Local API**: Full two-way state control and telemetry via HTTP REST, WebSockets, and MQTT.
 
 ## ⚙️ Hardware & Modding
@@ -41,7 +42,7 @@ The build scripts require PlatformIO to run on Python 3.13 or newer. If Platform
 
 ### 1. Configure (optional)
 
-Copy [secrets.example.toml](https://github.com/VIPnytt/Kortlinje/blob/main/secrets.example.toml) to `secrets.toml` to change pins, device name, temperature unit, MQTT, OTA password or weather location. The copy is ignored by Git, so credentials stay local. Without it, the build uses the defaults from the example file. Wi-Fi credentials are optional too, as the clock starts a hotspot for Wi-Fi setup when no network is saved.
+Copy [secrets.example.toml](https://github.com/VIPnytt/Kortlinje/blob/main/secrets.example.toml) to `secrets.toml` to change pins, device name, temperature unit, MQTT, OTA password or weather location. The copy is ignored by Git, so credentials stay local. Without it, the build uses the defaults from the example file. Wi-Fi credentials are optional too, as the clock starts a hotspot for Wi-Fi setup when no network is saved. The time zone and clock format default to those of the build machine, unless set in `[time]`, and can be changed from the web UI at any time.
 
 ### 2. Build and Flash
 
@@ -52,6 +53,7 @@ Connect your RP2350 board, open the project workspace in PlatformIO, and trigger
 Once flashed, Kortlinje integrates directly into your local network and smart home ecosystem:
 
 - **Wi-Fi Provisioning**: With no saved Wi-Fi network, the clock starts an AP hotspot on boot, so credentials can be configured directly from your phone or PC. To add or change networks later, hold the rear cogwheel button while booting to start the hotspot again.
+- **Time**: The clock syncs over NTP once connected, and the time zone, NTP server and 12/24-hour format can be changed on the web UI's Time page. Daylight saving time transitions are applied on the device, without network access.
 - **Home Assistant**: Native discovery support via MQTT for automatic entity creation, switches, and sensor telemetry, including CO₂ when the sensor is fitted.
 - **Voice Control**: Alexa bridge emulation for app and voice control of display power and brightness.
 - **Developer API**: REST endpoints and real-time WebSocket streams for custom scripts and home automation hubs.

@@ -18,6 +18,7 @@ void DeviceService::begin0()
     Serial.printf("Kortlinje v%s\n", Kortlinje::version.data());
     LittleFS.begin();
     extensions.configure();
+    time.begin();
     connectivity.begin();
     webServer.begin();
     extensions.begin();
@@ -39,6 +40,7 @@ void DeviceService::handle0()
         watchdog_update();
     }
     connectivity.handle();
+    time.handle();
     extensions.handle();
     if (!ButtonExtension::isEnabled())
     {
@@ -160,6 +162,11 @@ void DeviceService::receive(JsonObjectConst payload, std::string_view source, st
     if (ModesService::name == destination)
     {
         ModesService::onReceive(payload, source);
+        return;
+    }
+    if (TimeService::name == destination)
+    {
+        TimeService::onReceive(payload, source);
         return;
     }
     ExtensionModule *_extension{ExtensionsService::getExtension(destination)};

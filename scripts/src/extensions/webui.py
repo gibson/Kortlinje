@@ -7,6 +7,7 @@ import typing
 
 import nodejs_wheel
 
+from ..components.time import Time
 from ..config.version import VERSION
 
 if typing.TYPE_CHECKING:
@@ -42,12 +43,16 @@ class WebUI:
         Synchronize project settings with the web app, build the app, and register dependencies.
         """
         device = self.project.toml.get("device", {})
+        time = self.project.toml.get("time", {})
         secrets_lines: list[str] = []
         for key, value in {
             "ARDUINO_VARIANT": self.project.env.BoardConfig().get("build.variant"),
             "DEVICE_HOSTNAME": device.get("hostname"),
             "DEVICE_NAME": device.get("name"),
             "DEVICE_TEMPERATURE_UNIT": device.get("temperature_unit"),
+            "TIME_FORMAT": time.get("format"),
+            "TIME_POSIX": time.get("posix"),
+            "TIME_ZONE": time.get("zone"),
         }.items():
             if isinstance(value, bool):
                 ts_type = "boolean"
@@ -67,6 +72,12 @@ class WebUI:
         secrets_path.parent.mkdir(parents=True, exist_ok=True)
         if not secrets_path.is_file() or secrets_path.read_text(encoding="utf-8") != secrets_content:
             secrets_path.write_text(secrets_content, encoding="utf-8")
+        zones_path = self.path / "src" / "constants" / "zones.ts"
+        zones_content = (
+            f"export const ZONES: Record<string, string> = {json.dumps(Time.zones(), ensure_ascii=False)};\n"
+        )
+        if not zones_path.is_file() or zones_path.read_text(encoding="utf-8") != zones_content:
+            zones_path.write_text(zones_content, encoding="utf-8")
         version_path = self.path / "src" / "constants" / "version.ts"
         version_path.parent.mkdir(parents=True, exist_ok=True)
         version_content = f'export const VERSION: string = "{VERSION}";\n'
@@ -105,6 +116,7 @@ class WebUI:
         for file in (
             webui / "src" / "constants" / "secrets.ts",
             webui / "src" / "constants" / "version.ts",
+            webui / "src" / "constants" / "zones.ts",
         ):
             if file.is_file():
                 file.unlink()

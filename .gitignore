@@ -16,5 +16,6 @@
 /webui/node_modules
 /webui/src/constants/secrets.ts
 /webui/src/constants/version.ts
+/webui/src/constants/zones.ts
 /x509
 __pycache__

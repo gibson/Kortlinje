@@ -95,24 +95,50 @@ class Time:
         if not parts or any(part in {"", ".", ".."} for part in parts):
             logging.getLogger(__name__).warning("Unknown timezone: %r", iana)
             return None
-        data = cls._read_tzif(parts)
-        if data and data.startswith(b"TZif") and data.endswith(b"\n"):
+        if (data := cls._read_tzif(parts)) and (posix := cls._read_footer(data)):
+            return posix
+        logging.getLogger(__name__).warning("Unknown timezone: %r", iana)
+        return None
+
+    @classmethod
+    def zones(cls) -> dict[str, str]:
+        """Map every IANA timezone in the pinned ``tzdata`` package to its embedded POSIX timezone string.
+
+        The ``tzdata`` package is used instead of the host OS database, so every build produces the same table.
+
+        Returns:
+            dict[str, str]: POSIX timezone strings keyed by IANA timezone identifier, sorted by identifier.
+        """
+        root = importlib.resources.files("tzdata")
+        zones: dict[str, str] = {}
+        for iana in root.joinpath("zones").read_text(encoding="utf-8").split():
+            resource = root.joinpath("zoneinfo", *iana.split("/"))
+            if iana != "Factory" and resource.is_file() and (posix := cls._read_footer(resource.read_bytes())):
+                zones[iana] = posix
+        return dict(sorted(zones.items()))
+
+    @staticmethod
+    def _read_footer(data: bytes) -> str | None:
+        """Extract the POSIX timezone string from the footer of TZif bytes."""
+        if data.startswith(b"TZif") and data.endswith(b"\n"):
             footer = data.rsplit(b"\n", 2)
             if len(footer) == 3 and footer[1]:
                 with contextlib.suppress(UnicodeDecodeError):
                     return footer[1].decode("ascii")
-        logging.getLogger(__name__).warning("Unknown timezone: %r", iana)
         return None
 
     @staticmethod
     def _read_tzif(parts: list[str]) -> bytes | None:
-        """Read raw TZif bytes from ``zoneinfo.TZPATH`` or the ``tzdata`` package."""
-        for directory in zoneinfo.TZPATH:
-            zone_file = pathlib.Path(directory, *parts)
-            if zone_file.is_file():
-                return zone_file.read_bytes()
+        """Read raw TZif bytes from the pinned ``tzdata`` package, falling back to ``zoneinfo.TZPATH``.
+
+        Preferring ``tzdata`` keeps the build default consistent with the web UI's time zone table from ``zones``.
+        """
         with contextlib.suppress(ModuleNotFoundError):
             resource = importlib.resources.files("tzdata.zoneinfo").joinpath(*parts)
             if resource.is_file():
                 return resource.read_bytes()
+        for directory in zoneinfo.TZPATH:
+            zone_file = pathlib.Path(directory, *parts)
+            if zone_file.is_file():
+                return zone_file.read_bytes()
         return None

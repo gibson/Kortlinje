@@ -44,6 +44,11 @@ import {
   MainThird as ModesThird,
   SidebarThird as ModesThirdSidebar,
 } from "../services/Modes";
+import {
+  name as TimeName,
+  SidebarSecondaryComponent as TimeSecondarySidebarComponent,
+  MainThird as TimeThird,
+} from "../services/Time";
 import { WebSocketmessages, WebSocketState, WebSocketWS } from "./WebSocket";
 
 export const name = "Web UI";
@@ -132,6 +137,9 @@ const Secondary: Component = () => (
         <Match when={WebUIPath().startsWith(`/${ModesName.toLowerCase()}`)}>
           <ModesThird />
         </Match>
+        <Match when={WebUIPath().startsWith(`/${TimeName.toLowerCase()}`)}>
+          <TimeThird />
+        </Match>
       </Switch>
     }
     sidebar={
@@ -142,6 +150,7 @@ const Secondary: Component = () => (
               <SidebarSectionSecondary title="Kortlinje">
                 <div class="space-y-3">
                   <ConnectivitySecondarySidebarComponent />
+                  <TimeSecondarySidebarComponent />
                 </div>
               </SidebarSectionSecondary>
               <ExtensionsSecondarySidebar />

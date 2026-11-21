@@ -2,6 +2,7 @@
 
 #include "fonts/KortlinjeFont.h"
 #include "handlers/TextHandler.h"
+#include "services/TimeService.h"
 
 #include <algorithm>
 #include <cmath>
@@ -31,12 +32,10 @@ void BreakoutMode::handle()
         {
             hour = local.tm_hour;
             minute = local.tm_min;
-            const int _hour{Kortlinje::time::format == 12U ? (local.tm_hour + 11) % 12 + 1 : hour};
-            if constexpr (Kortlinje::time::format == 12U)
-            {
-                DisplayService::setPixel(DisplayService::Symbol::AM, local.tm_hour < 12);
-                DisplayService::setPixel(DisplayService::Symbol::PM, local.tm_hour >= 12);
-            }
+            const bool twelve{TimeService::getFormat() == 12U};
+            const int _hour{twelve ? (local.tm_hour + 11) % 12 + 1 : hour};
+            DisplayService::setPixel(DisplayService::Symbol::AM, twelve && local.tm_hour < 12);
+            DisplayService::setPixel(DisplayService::Symbol::PM, twelve && local.tm_hour >= 12);
             const KortlinjeFont font{};
             const TextHandler text{std::format("{:02d}:{:02d}", _hour, minute), font};
             text.draw(0, static_cast<int8_t>((Display::grid::rows - text.getHeight()) / 2U));

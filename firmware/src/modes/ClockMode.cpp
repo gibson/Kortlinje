@@ -4,20 +4,24 @@
 #include "fonts/KortlinjeFont.h"
 #include "handlers/BitmapHandler.h"
 #include "services/DisplayService.h"
+#include "services/TimeService.h"
 
 void ClockMode::begin() { pending = true; }
 
 void ClockMode::handle()
 {
     now = time(nullptr);
-    if (localtime_r(&now, &local) != nullptr && (minute != local.tm_min || hour != local.tm_hour || pending))
+    const uint8_t _format{TimeService::getFormat()};
+    if (localtime_r(&now, &local) != nullptr &&
+        (minute != local.tm_min || hour != local.tm_hour || format != _format || pending))
     {
         pending = false;
+        format = _format;
         hour = local.tm_hour;
         minute = local.tm_min;
         DisplayService::fillFrame(false);
-        const int _hour{Kortlinje::time::format == 12U ? (local.tm_hour + 11) % 12 + 1 : local.tm_hour};
-        if constexpr (Kortlinje::time::format == 12U)
+        const int _hour{format == 12U ? (local.tm_hour + 11) % 12 + 1 : local.tm_hour};
+        if (format == 12U)
         {
             DisplayService::setPixel(local.tm_hour < 12 ? DisplayService::Symbol::AM : DisplayService::Symbol::PM,
                                      true);

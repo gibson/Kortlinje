@@ -5,6 +5,7 @@
 #include "extensions/AlexaExtension.h"
 #include "handlers/ConfigHandler.h"
 #include "services/DeviceService.h"
+#include "services/TimeService.h"
 
 #include <SimpleMDNS.h>
 #include <WiFi.h>
@@ -15,7 +16,7 @@
 #include <time.h>
 
 /**
- * @brief Configures Wi-Fi, checks the boot button for hotspot mode, and starts NTP synchronization.
+ * @brief Configures Wi-Fi and checks the boot button for hotspot mode.
  *
  * Initializes Soft-AP mode if button_rear reads LOW during boot or no Wi-Fi network is saved; otherwise starts station
  * mode.
@@ -23,8 +24,6 @@
 void ConnectivityService::begin()
 {
     WiFi.setHostname(Kortlinje::device::hostname.data());
-    setenv("TZ", Kortlinje::time::posix.data(), 1);
-    tzset();
     gpio_init(Kortlinje::pin::button_rear);
     gpio_disable_pulls(Kortlinje::pin::button_rear);
     gpio_set_dir(Kortlinje::pin::button_rear, gpio_dir::GPIO_IN);
@@ -275,10 +274,7 @@ void ConnectivityService::onRoutable()
     if (!routable)
     {
         routable = true;
-        NTP.begin("1.pool.ntp.org", "2.pool.ntp.org");
-        watchdog_update();
-        NTP.waitSet(0b1U << 14U);
-        watchdog_update();
+        TimeService::sync();
         if (!mdns && MDNS.begin(Kortlinje::device::hostname.data()))
         {
             mdns = true;

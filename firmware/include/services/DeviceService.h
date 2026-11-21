@@ -6,6 +6,7 @@
 #include "services/ExtensionsService.h"
 #include "services/FontsService.h"
 #include "services/ModesService.h"
+#include "services/TimeService.h"
 #include "services/WebServerService.h"
 
 #include <ArduinoJson.h>
@@ -57,6 +58,8 @@ private:
     static inline JsonDocument transmits{};
 
     ModesService modes{};
+
+    TimeService time{};
 
     WebServerService webServer{};
 

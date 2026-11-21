@@ -9,6 +9,8 @@ class ClockMode final : public ModeModule
 private:
     bool pending{false};
 
+    uint8_t format{0U};
+
     int hour{24};
     int minute{60};
 

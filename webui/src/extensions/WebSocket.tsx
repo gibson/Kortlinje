@@ -15,6 +15,7 @@ import {
 import { name as DisplayName, receiver as DisplayReceiver } from "../services/Display";
 import { name as FontsName, receiver as FontsReceiver } from "../services/Fonts";
 import { name as ModesName, receiver as ModesReceiver } from "../services/Modes";
+import { name as TimeName, receiver as TimeReceiver } from "../services/Time";
 import { name as ExtensionAlarmName, receiver as ExtensionAlarmReceiver } from "./Alarm";
 import { name as ExtensionMessageName, receiver as ExtensionMessageReceiver } from "./Message";
 import { name as ExtensionMirrorName, receiver as ExtensionMirrorReceiver } from "./Mirror";
@@ -57,6 +58,7 @@ export const WebSocketmessages: ParentComponent = (props) => {
       json[DisplayName] && DisplayReceiver(json[DisplayName]);
       json[FontsName] && FontsReceiver(json[FontsName]);
       json[ModesName] && ModesReceiver(json[ModesName]);
+      json[TimeName] && TimeReceiver(json[TimeName]);
       json[ExtensionAlarmName] && ExtensionAlarmReceiver(json[ExtensionAlarmName]);
       json[ExtensionMessageName] && ExtensionMessageReceiver(json[ExtensionMessageName]);
       json[ExtensionMirrorName] && ExtensionMirrorReceiver(json[ExtensionMirrorName]);
